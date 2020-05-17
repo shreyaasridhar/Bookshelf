@@ -115,36 +115,21 @@ def create_app(test_config=None):
   @app.route('/books', methods=['POST'])
   def create_book():
     body = request.get_json()
-
-    new_title = body.get('title', None)
-    new_author = body.get('author', None)
-    new_rating = body.get('rating', None)
-    search = body.get('search', None)
+    print(body)
 
     try:
-      if search:
-        selection = Book.query.order_by(Book.id).filter(Book.title.ilike('%{}%'.format(search)))
-        #selection = Book.query.order_by(Book.id).filter(or_(Book.title.ilike('%{}%'.format(search)), Book.author.ilike('%{}%'.format(search))))
-        current_books = paginate_books(request, selection)
+      
+      book = Book(title=body['title'], author=body['author'], rating=body['rating'])
+      book.insert()
 
-        return jsonify({
-          'success': True,
-          'books': current_books,
-          'total_books': len(selection.all())
-        })
-      else: 
-        book = Book(title=new_title, author=new_author, rating=new_rating)
-        book.insert()
+      formatted_books = paginate_books(request, Book.query.order_by(Book.id).all())
 
-        selection = Book.query.order_by(Book.id).all()
-        current_books = paginate_books(request, selection)
-
-        return jsonify({
-          'success': True,
-          'created': book.id,
-          'books': current_books,
-          'total_books': len(Book.query.all())
-        })
+      return jsonify({
+        'success': True,
+        'created': book.id,
+        'books': formatted_books,
+        'total_books': len(Book.query.all())
+      })
 
     except:
       abort(422)
