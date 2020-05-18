@@ -37,8 +37,6 @@ class BookTestCase(unittest.TestCase):
         pass
 
     def test_get_paginated_books(self):
-        self.assertEqual(self.client().get(
-            '/').status_code, 200)
         res = self.client().get('/books')
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
@@ -60,6 +58,24 @@ class BookTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertEqual(book.format()['rating'], 5)
         pass
+
+    def test_search_book_results(self):
+        res = self.client().post('/books', json={'search': 'Never'})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['total_books'])
+        self.assertEqual(len(data['books']), 2)
+
+    def test_search_book_no_result(self):
+        res = self.client().post('/books', json={'search': 'Random'})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['total_books'], 0)
+        self.assertEqual(len(data['books']), 0)
 
 # @TODO: Write at least two tests for each endpoint - one each for success and error behavior.
 #        You can feel free to write additional tests for nuanced functionality,
