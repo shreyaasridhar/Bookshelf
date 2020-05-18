@@ -4,11 +4,12 @@
 * API Keys /Authentication is not required at the moment
 ## Error Handling
 Errors are returned as JSON Objects in the following format
-```{
+```
+{
         "success": False,
         "error": 400,
         "message": "bad request"
-   }
+}
 ```
 The API returns the following response codes in case of an error:
 * 400, Bad Request
