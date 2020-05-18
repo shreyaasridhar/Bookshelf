@@ -1,5 +1,44 @@
-# API reference
+# Bookshelf
+This an application developed as a part of Udacity's Full Stack Web Developer NanoDegree. This application let's people to view books, add new books, modify rating and delete books from the bookshelf. 
+This project was created to get familiar with creating well formatted API endpoints leveraging the knowledge of HTTP and API development best practices which includes testing and documention.
+
+The backend code follows [PEP8 Style guidelines](https://www.python.org/dev/peps/pep-0008/)
+
 ## Getting Started
+### Pre-requisites and local development
+Developers need to have Python3, pip and node installed to run this application.
+
+**Backend**
+
+From the backend folder run `pip install requirements.txt` which includes all the required packages.
+To run the application,
+
+`FLASK_APP=flaskr FLASK_ENV=development flask run`
+
+This runs the application in develop and debug mode in `__init__.py` file of the flaskr folder. To run on Windows please view [Flask documentation](https://flask.palletsprojects.com/en/1.1.x/installation/).
+
+The application is now run on `http://127.0.0.1:5000/` by default.
+
+__Frontend__
+
+To configure the frontend of the application, from the frontend folder run,
+```
+npm i //install all node dependencies
+npm start
+```
+The frontend will run by default on `http://localhost:3000/`
+
+### Tests
+To run tests,
+```
+dropdb bookshelf_test
+createdb bookshelf_test
+psql bookshelf_test < books.psql
+python test_flaskr.py
+```
+The tests are updated as the functionality of the app is updated.
+
+## API reference
 * Base URL : At present the frontend React app is run locally on localhost:3000, not hosted on a base URL. The flask backend is served at 127.0.0.1:5000.
 * API Keys /Authentication is not required at the moment
 ## Error Handling
@@ -167,3 +206,8 @@ The API returns the following response codes in case of an error:
    "success":true
    }
 ```
+## Deployment N/A
+### Authors
+Coach, [Caryn](https://github.com/cmccarthy15)
+### Acknowledgements
+Udacity Nanodegree!
