@@ -34,9 +34,8 @@ def paginate_books(request, selection):
   end = start + BOOKS_PER_SHELF
 
   books = [book.format() for book in selection]
-  current_books = books[start:end]
 
-  return current_books
+  return books[start:end]
 
 def create_app(test_config=None):
   # create and configure the app
@@ -94,8 +93,9 @@ def create_app(test_config=None):
   def delete_book(book_id):
     try:
       book = Book.query.filter(Book.id == book_id).one_or_none()
-
+      print(book)
       if book is None:
+        print("aborting")
         abort(404)
 
       book.delete()
