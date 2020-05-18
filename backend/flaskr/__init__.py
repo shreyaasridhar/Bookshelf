@@ -1,6 +1,6 @@
 import os
 from flask import Flask, request, abort, jsonify
-from flask_sqlalchemy import SQLAlchemy #, or_
+from flask_sqlalchemy import SQLAlchemy  # , or_
 from flask_cors import CORS
 import random
 
@@ -13,151 +13,149 @@ BOOKS_PER_SHELF = 8
 # TODO: Define an app route to retrieve all books
 # TODO: Define pagination behavior on the get request
 
-# TODO: Define an endpoint to delete a book based on id. If it doesn't exist, abort. 
-# TODO: Define a PATCH endpoint that updates a book's rating. 
-  # Abort if the book doesn't exist or the update fails 
+# TODO: Define an endpoint to delete a book based on id. If it doesn't exist, abort.
+# TODO: Define a PATCH endpoint that updates a book's rating.
+# Abort if the book doesn't exist or the update fails
 # TODO: Define a POST endpoint to handle creating a new book instance.
-  # Abort if creation is unsuccessful
+# Abort if creation is unsuccessful
 
 # TODO: Write error handlers for all abort status codes utilized in the endpoints
-  # They should return the code, a message, and success value. 
+# They should return the code, a message, and success value.
 
 # TODO: AFTER writing the corresponding tests, write an endpoint or update a previous endpoint
-  # that handles a search arg in the body of the request and return paginated results. 
-
-
+# that handles a search arg in the body of the request and return paginated results.
 
 
 def paginate_books(request, selection):
-  page = request.args.get('page', 1, type=int)
-  start =  (page - 1) * BOOKS_PER_SHELF
-  end = start + BOOKS_PER_SHELF
+    page = request.args.get('page', 1, type=int)
+    start = (page - 1) * BOOKS_PER_SHELF
+    end = start + BOOKS_PER_SHELF
 
-  books = [book.format() for book in selection]
+    books = [book.format() for book in selection]
 
-  return books[start:end]
+    return books[start:end]
+
 
 def create_app(test_config=None):
-  # create and configure the app
-  app = Flask(__name__)
-  setup_db(app)
-  CORS(app)
+    # create and configure the app
+    app = Flask(__name__)
+    setup_db(app)
+    CORS(app)
 
-  # CORS Headers 
-  @app.after_request
-  def after_request(response):
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-    return response
+    # CORS Headers
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Headers',
+                             'Content-Type,Authorization,true')
+        response.headers.add('Access-Control-Allow-Methods',
+                             'GET,PUT,POST,DELETE,OPTIONS')
+        return response
 
-  
-  @app.route('/books')
-  def retrieve_books():
-    selection = Book.query.order_by(Book.id).all()
-    current_books = paginate_books(request, selection)
+    @app.route('/books')
+    def retrieve_books():
+        selection = Book.query.order_by(Book.id).all()
+        current_books = paginate_books(request, selection)
 
-    if len(current_books) == 0:
-      abort(404)
+        if len(current_books) == 0:
+            abort(404)
 
-    return jsonify({
-      'success': True,
-      'books': current_books,
-      'total_books': len(Book.query.all())
-    })
- 
+        return jsonify({
+            'success': True,
+            'books': current_books,
+            'total_books': len(Book.query.all())
+        })
 
-  @app.route('/books/<int:book_id>', methods=['PATCH'])
-  def update_book(book_id):
+    @app.route('/books/<int:book_id>', methods=['PATCH'])
+    def update_book(book_id):
 
-    body = request.get_json()
+        body = request.get_json()
 
-    try:
-      book = Book.query.filter(Book.id == book_id).one_or_none()
-      if book is None:
-        abort(404)
+        try:
+            book = Book.query.filter(Book.id == book_id).one_or_none()
+            if book is None:
+                abort(404)
 
-      if 'rating' in body:
-        book.rating = int(body.get('rating'))
+            if 'rating' in body:
+                book.rating = int(body.get('rating'))
 
-      book.update()
+            book.update()
 
-      return jsonify({
-        'success': True,
-        'id': book.id
-      })
-      
-    except:
-      abort(400)
+            return jsonify({
+                'success': True,
+                'id': book.id
+            })
 
-  @app.route('/books/<int:book_id>', methods=['DELETE'])
-  def delete_book(book_id):
-    try:
-      book = Book.query.filter(Book.id == book_id).one_or_none()
-      print(book)
-      if book is None:
-        print("aborting")
-        abort(404)
+        except:
+            abort(400)
 
-      book.delete()
-      selection = Book.query.order_by(Book.id).all()
-      current_books = paginate_books(request, selection)
+    @app.route('/books/<int:book_id>', methods=['DELETE'])
+    def delete_book(book_id):
+        try:
+            book = Book.query.filter(Book.id == book_id).one_or_none()
+            print(book)
+            if book is None:
+                abort(404)
 
-      return jsonify({
-        'success': True,
-        'deleted': book_id,
-        'books': current_books,
-        'total_books': len(Book.query.all())
-      })
+            book.delete()
+            selection = Book.query.order_by(Book.id).all()
+            current_books = paginate_books(request, selection)
 
-    except:
-      abort(422)
+            return jsonify({
+                'success': True,
+                'deleted': book_id,
+                'books': current_books,
+                'total_books': len(Book.query.all())
+            })
 
-  @app.route('/books', methods=['POST'])
-  def create_book():
-    body = request.get_json()
-    print(body)
+        except:
+            abort(422)
 
-    try:
-      
-      book = Book(title=body['title'], author=body['author'], rating=body['rating'])
-      book.insert()
+    @app.route('/books', methods=['POST'])
+    def create_book():
+        body = request.get_json()
+        print(body)
 
-      formatted_books = paginate_books(request, Book.query.order_by(Book.id).all())
+        try:
 
-      return jsonify({
-        'success': True,
-        'created': book.id,
-        'books': formatted_books,
-        'total_books': len(Book.query.all())
-      })
+            book = Book(title=body['title'],
+                        author=body['author'], rating=body['rating'])
+            book.insert()
 
-    except:
-      abort(422)
+            formatted_books = paginate_books(
+                request, Book.query.order_by(Book.id).all())
 
-  @app.errorhandler(404)
-  def not_found(error):
-    return jsonify({
-      "success": False, 
-      "error": 404,
-      "message": "resource not found"
-      }), 404
+            return jsonify({
+                'success': True,
+                'created': book.id,
+                'books': formatted_books,
+                'total_books': len(Book.query.all())
+            })
 
-  @app.errorhandler(422)
-  def unprocessable(error):
-    return jsonify({
-      "success": False, 
-      "error": 422,
-      "message": "unprocessable"
-      }), 422
+        except:
+            abort(422)
 
-  @app.errorhandler(400)
-  def bad_request(error):
-    return jsonify({
-      "success": False, 
-      "error": 400,
-      "message": "bad request"
-      }), 400
-  
-  return app
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({
+            "success": False,
+            "error": 404,
+            "message": "resource not found"
+        }), 404
 
-    
+    @app.errorhandler(422)
+    def unprocessable(error):
+        return jsonify({
+            "success": False,
+            "error": 422,
+            "message": "unprocessable"
+        }), 422
+
+    @app.errorhandler(400)
+    def bad_request(error):
+        return jsonify({
+            "success": False,
+            "error": 400,
+            "message": "bad request"
+        }), 400
+
+    return app
